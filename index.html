@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Turbo Combo Optimizer | Mail:Pass Sorter</title>
+    <meta name="description" content="Blazing fast, client-side Mail:Pass combo list cleaner and sorter. Optimized for large files.">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --purple: #8b5cf6;
+            --purple-hover: #7c3aed;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.025em; display: flex; align-items: center; gap: 10px; }
+        .badge { background: var(--accent); font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Drop Zone */
+        .drop-zone {
+            margin: 2rem;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.01);
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .drop-zone svg { width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 1rem; }
+        .drop-zone p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
+        .drop-zone span { color: var(--accent); font-weight: 600; }
+        
+        input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        /* Dashboard Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            padding: 0 2rem 2rem;
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .stat-value.highlight { color: var(--accent); }
+
+        /* Progress Bar */
+        .progress-container {
+            height: 4px;
+            background: var(--bg-primary);
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Controls */
+        .controls {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+            background: rgba(15, 23, 42, 0.3);
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+        .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+        
+        .btn-download { background: var(--success); color: white; display: none; }
+        .btn-download:hover { background: #059669; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+
+        .btn-share { background: var(--purple); color: white; display: none; }
+        .btn-share:hover { background: var(--purple-hover); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+
+        /* Share Result Box */
+        .share-box {
+            display: none;
+            margin: 0 2rem 2rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--purple);
+            border-radius: 8px;
+            padding: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .share-box input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            color: var(--text-main);
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .share-label { color: var(--purple); font-size: 0.8rem; font-weight: 600; display: flex; justify-content: space-between; }
+        .share-note { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* Output Logs */
+        .console-output {
+            margin: 0 2rem 2rem;
+            background: #000;
+            border-radius: 8px;
+            height: 150px;
+            overflow-y: auto;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: #a5b4fc;
+            border: 1px solid var(--border);
+        }
+
+        .console-output div { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
+        .log-info { color: var(--text-muted); }
+        .log-success { color: var(--success); }
+        .log-error { color: var(--danger); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        @media (max-width: 600px) {
+            .app-container { border-radius: 0; min-height: 100vh; }
+            .drop-zone { margin: 1rem; padding: 2rem 1rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; padding: 0 1rem 1rem; }
+            .controls { padding: 1rem; flex-direction: column; }
+            .console-output { margin: 0 1rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>⚡ Turbo Combo Opt. <span class="badge">v2.1</span></h1>
+            <div id="status-badge" style="color: var(--text-muted); font-size: 0.85rem;">Ready</div>
+        </header>
+
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div class="drop-zone" id="drop-zone">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <p>Drag & Drop <span>.TXT</span> files here</p>
+            <p style="font-size: 0.8rem; margin-top: 5px;">or click to browse</p>
+            <input type="file" id="file-input" multiple accept=".txt">
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Lines</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unique Hits</div>
+                <div class="stat-value highlight" id="stat-unique">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Duplicates</div>
+                <div class="stat-value" id="stat-dupes" style="color: var(--danger)">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Top Domain</div>
+                <div class="stat-value" id="stat-domain" style="font-size: 1rem; line-height: 1.8rem;">-</div>
+            </div>
+        </div>
+
+        <div class="share-box" id="share-box">
+            <div class="share-label">
+                <span>PasteView Link Created</span>
+                <span style="cursor: pointer; opacity: 0.8;" onclick="document.getElementById('share-link').select(); document.execCommand('copy'); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 1500);">Copy</span>
+            </div>
+            <input type="text" id="share-link" readonly onclick="this.select()">
+            <div class="share-note">Link generated via PasteView API (1 Day Expiry).</div>
+        </div>
+
+        <div class="console-output" id="console-output">
+            <div class="log-info">> System initialized. Waiting for input...</div>
+        </div>
+
+        <div class="controls">
+            <button id="btn-process" class="btn-primary" disabled>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Process Files
+            </button>
+            <button id="btn-download" class="btn-download">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Download Cleaned
+            </button>
+            <button id="btn-share" class="btn-share">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                Upload & Get Link
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ------------------------------------------------------------------
+         * INLINE WEB WORKER (The Engine)
+         * Runs in a background thread to prevent UI freezing.
+         * ------------------------------------------------------------------
+         */
+        const workerCode = `
+        self.onmessage = async function(e) {
+            const { files } = e.data;
+            
+            const uniqueLines = new Set();
+            const domainCounts = {};
+            
+            let totalProcessed = 0;
+            let totalDupes = 0;
+            let totalEmpty = 0;
+            let currentFileIndex = 0;
+
+            const updateInterval = 2000; // Update UI every 2000 lines for speed
+            let lastUpdate = 0;
+
+            for (const file of files) {
+                currentFileIndex++;
+                self.postMessage({ type: 'log', msg: 'Reading: ' + file.name + ' (' + formatBytes(file.size) + ')' });
+                
+                try {
+                    const text = await file.text();
+                    const lines = text.split(/\\r?\\n/);
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        totalProcessed++;
+
+                        if (!line) {
+                            totalEmpty++;
+                            continue;
+                        }
+
+                        // Optimization: Fast String Splitting instead of Regex
+                        const separatorIndex = line.indexOf(':');
+                        if (separatorIndex === -1) continue;
+
+                        let cleanLine = line;
+                        const pipeIndex = line.indexOf('|');
+                        if (pipeIndex > -1) {
+                            cleanLine = line.substring(0, pipeIndex).trim();
+                        }
+
+                        if (cleanLine.length < 5) continue; 
+
+                        if (uniqueLines.has(cleanLine)) {
+                            totalDupes++;
+                        } else {
+                            uniqueLines.add(cleanLine);
+                            
+                            const atIndex = cleanLine.indexOf('@');
+                            if (atIndex > -1) {
+                                const passSep = cleanLine.indexOf(':', atIndex);
+                                if (passSep > -1) {
+                                    const domain = cleanLine.substring(atIndex + 1, passSep).toLowerCase();
+                                    if(domain) {
+                                        domainCounts[domain] = (domainCounts[domain] || 0) + 1;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (totalProcessed - lastUpdate > updateInterval) {
+                            postProgress(totalProcessed, uniqueLines.size, totalDupes, domainCounts);
+                            lastUpdate = totalProcessed;
+                        }
+                    }
+                } catch (err) {
+                    self.postMessage({ type: 'error', msg: 'Failed to read ' + file.name });
+                }
+                
+                self.postMessage({ type: 'fileProgress', percent: (currentFileIndex / files.length) * 100 });
+            }
+
+            postProgress(totalProcessed, uniqueLines.size, totalDupes, domainCounts);
+
+            self.postMessage({ type: 'log', msg: 'Generating output file...' });
+            const finalString = Array.from(uniqueLines).join('\\n');
+            const blob = new Blob([finalString], { type: 'text/plain' });
+            
+            self.postMessage({ type: 'done', blob: blob, uniqueCount: uniqueLines.size });
+        };
+
+        function postProgress(total, unique, dupes, domains) {
+            let topDomain = '-';
+            let maxCount = 0;
+            for(let d in domains) {
+                if(domains[d] > maxCount) {
+                    maxCount = domains[d];
+                    topDomain = d;
+                }
+            }
+
+            self.postMessage({
+                type: 'stats',
+                data: {
+                    total: total,
+                    unique: unique,
+                    dupes: dupes,
+                    topDomain: topDomain + ' (' + maxCount + ')'
+                }
+            });
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+        `;
+
+        /**
+         * ------------------------------------------------------------------
+         * MAIN THREAD UI LOGIC
+         * ------------------------------------------------------------------
+         */
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const btnProcess = document.getElementById('btn-process');
+        const btnDownload = document.getElementById('btn-download');
+        const btnShare = document.getElementById('btn-share');
+        const shareBox = document.getElementById('share-box');
+        const shareLinkInput = document.getElementById('share-link');
+        const consoleOut = document.getElementById('console-output');
+        const progressBar = document.getElementById('progress-bar');
+        const statusBadge = document.getElementById('status-badge');
+
+        let selectedFiles = [];
+        let resultBlob = null;
+        let worker = null;
+
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(blob);
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', handleFiles, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files: files } });
+        }
+
+        function handleFiles(e) {
+            const files = Array.from(e.target.files).filter(f => f.name.endsWith('.txt'));
+            if (files.length > 0) {
+                selectedFiles = files;
+                btnProcess.disabled = false;
+                btnProcess.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Process ${files.length} Files`;
+                log(`Loaded ${files.length} files. Ready to start.`);
+                statusBadge.textContent = "Files Loaded";
+            } else {
+                log('Error: No .txt files selected.', 'error');
+            }
+        }
+
+        btnProcess.addEventListener('click', () => {
+            if (worker) worker.terminate(); 
+            worker = new Worker(workerUrl);
+            
+            resetStats();
+            btnProcess.disabled = true;
+            btnDownload.style.display = 'none';
+            btnShare.style.display = 'none';
+            shareBox.style.display = 'none';
+            statusBadge.textContent = "Processing...";
+            progressBar.style.width = '5%';
+
+            worker.postMessage({ files: selectedFiles });
+
+            worker.onmessage = function(e) {
+                const { type, data, msg, percent, blob, uniqueCount } = e.data;
+
+                if (type === 'log') {
+                    log(msg);
+                } else if (type === 'error') {
+                    log(msg, 'error');
+                } else if (type === 'stats') {
+                    updateStats(data);
+                } else if (type === 'fileProgress') {
+                    progressBar.style.width = Math.max(5, percent) + '%';
+                } else if (type === 'done') {
+                    resultBlob = blob;
+                    progressBar.style.width = '100%';
+                    btnProcess.disabled = false;
+                    btnProcess.innerText = "Process Again";
+                    btnDownload.style.display = 'flex';
+                    btnShare.style.display = 'flex';
+                    btnDownload.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download ${uniqueCount} Lines`;
+                    log('Processing Complete! Result ready.', 'success');
+                    statusBadge.textContent = "Completed";
+                }
+            };
+
+            worker.onerror = function(e) {
+                log('Worker Error: ' + e.message, 'error');
+                btnProcess.disabled = false;
+            };
+        });
+
+        // --- Helper Function for Filenames ---
+        function getTimestampFilename() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const sec = String(now.getSeconds()).padStart(2, '0');
+            return `cleanhit_${year}-${month}-${day}_${hour}-${min}-${sec}.txt`;
+        }
+
+        // --- Download Logic ---
+        btnDownload.addEventListener('click', () => {
+            if (!resultBlob) return;
+            const url = URL.createObjectURL(resultBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = getTimestampFilename();
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // --- Share Logic (PasteView API) ---
+        btnShare.addEventListener('click', async () => {
+            if (!resultBlob) return;
+            
+            // Security Check
+            if (window.location.protocol === 'file:') {
+                 alert('⚠️ Browser Security Warning ⚠️\n\nYou are running this file locally (file://).\nBrowsers block "Upload" features in this mode due to CORS.\n\nTo fix: Upload this HTML to GitHub Pages or run a local server (localhost).');
+                 log('Upload blocked by browser security (file:// protocol detected).', 'error');
+                 return;
+            }
+
+            const originalText = btnShare.innerHTML;
+            btnShare.disabled = true;
+            btnShare.innerHTML = 'Reading Data...';
+            
+            try {
+                // 1. Get content
+                const content = await resultBlob.text();
+                
+                if (!content || content.trim().length === 0) {
+                    throw new Error("Result is empty. Nothing to upload.");
+                }
+
+                // Size check
+                if (content.length > 2000000) { // Lower warning threshold to 2MB
+                     const proceed = confirm("File is large (" + formatBytes(resultBlob.size) + "). Uploading might take a while or fail. Proceed?");
+                     if(!proceed) throw new Error("Upload cancelled by user.");
+                }
+
+                btnShare.innerHTML = 'Uploading...';
+
+                // 2. Payload - Fix: Unwrapping content as required by API
+                const payload = {
+                    titleSection: {
+                        title: "Cleaned Combo List"
+                    },
+                    content: content, // Direct string, not nested object
+                    pasteStatus: {
+                        status: 'public'
+                    },
+                    pasteExpiry: {
+                        expiration: '1d'
+                    }
+                };
+
+                // 3. Request
+                const response = await fetch('https://pasteview.com/api/pastes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'x-api-key': '79165cb96f2dc511a76d69e2bbbb5af55f6049a1b386d5e4c023f4361cba7329'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let shareUrl = data.url;
+                    if (!shareUrl && data.id) {
+                         shareUrl = `https://pasteview.com/${data.id}`;
+                    }
+
+                    if (shareUrl) {
+                        shareBox.style.display = 'flex';
+                        shareLinkInput.value = shareUrl;
+                        
+                        document.querySelector('.share-label span:first-child').innerText = "PasteView Link Created";
+                        document.querySelector('.share-note').innerText = "Link generated via PasteView API (1 Day Expiry).";
+                        
+                        log('Paste created successfully!', 'success');
+                        shareLinkInput.select();
+                    } else {
+                        console.log("PasteView Response:", data);
+                        throw new Error('Upload successful but URL not found. Check console.');
+                    }
+                } else {
+                    // Enhanced error logging
+                    console.error("API Error Response:", data);
+                    const errorMsg = data.message || JSON.stringify(data);
+                    throw new Error('API Error: ' + errorMsg);
+                }
+
+            } catch (e) {
+                console.error(e);
+                log('Upload error: ' + e.message, 'error');
+                alert('Upload failed: ' + e.message);
+            } finally {
+                btnShare.disabled = false;
+                btnShare.innerHTML = originalText;
+            }
+        });
+
+        function updateStats(data) {
+            document.getElementById('stat-total').innerText = data.total.toLocaleString();
+            document.getElementById('stat-unique').innerText = data.unique.toLocaleString();
+            document.getElementById('stat-dupes').innerText = data.dupes.toLocaleString();
+            document.getElementById('stat-domain').innerText = data.topDomain;
+        }
+
+        function resetStats() {
+            document.getElementById('stat-total').innerText = '0';
+            document.getElementById('stat-unique').innerText = '0';
+            document.getElementById('stat-dupes').innerText = '0';
+            document.getElementById('stat-domain').innerText = '-';
+            consoleOut.innerHTML = '<div class="log-info">> Starting new session...</div>';
+            progressBar.style.width = '0%';
+        }
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = `> ${msg}`;
+            if (type === 'success') div.className = 'log-success';
+            if (type === 'error') div.className = 'log-error';
+            consoleOut.appendChild(div);
+            consoleOut.scrollTop = consoleOut.scrollHeight;
+        }
+    </script>
+</body>
+</html>
