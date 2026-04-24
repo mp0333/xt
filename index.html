@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#09090b">
-    <meta property="og:title" content="Turbo Combo Optimizer">
-    <meta property="og:description" content="Blazing fast Mail:Pass cleaner and sorter. Privacy-focused, client-side processing.">
-    <title>⚡ Turbo Optimizer | Pro Edition</title>
+    <title>Turbo Optimizer | v5 Pro Final</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -14,566 +15,831 @@
             theme: {
                 extend: {
                     colors: {
-                        background: '#09090b',
-                        panel: '#18181b',
-                        primary: '#06b6d4', // Cyan
-                        secondary: '#8b5cf6', // Purple
-                        success: '#10b981',
-                        danger: '#ef4444',
+                        background: '#07070a',
+                        panel: '#111116',
+                        border: '#1f1f28',
+                        primary: '#00d9ff',
+                        secondary: '#a855f7',
+                        success: '#22d3a5',
+                        danger: '#f43f5e',
+                        warning: '#f59e0b',
+                        gofile: '#00d9ff',
+                        catbox: '#f97316',
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
+                        sans: ['Syne', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }
                 }
             }
         }
     </script>
     <style>
-        /* Custom Scrollbar for Terminal */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #71717a; }
+        ::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f52; }
 
-        /* Glass Panel Effect */
-        .glass-panel {
-            background: rgba(24, 24, 27, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        body {
+            background-color: #07070a;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,217,255,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 110%, rgba(168,85,247,0.07) 0%, transparent 60%);
+            background-attachment: fixed;
         }
 
-        /* Animated Gradient Text */
+        .glass {
+            background: rgba(13, 13, 20, 0.75);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .glass-bright {
+            background: rgba(17, 17, 26, 0.90);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
         .gradient-text {
-            background: linear-gradient(to right, #06b6d4, #8b5cf6);
+            background: linear-gradient(90deg, #00d9ff, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        /* Dropzone Active State */
         .drop-active {
-            border-color: #06b6d4 !important;
-            background: rgba(6, 182, 212, 0.05) !important;
+            border-color: #00d9ff !important;
+            background: rgba(0,217,255,0.04) !important;
+            box-shadow: 0 0 40px rgba(0,217,255,0.08) inset;
         }
 
-        /* Progress Bar Glow */
-        .progress-glow {
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+        .progress-track {
+            background: #1a1a24;
+            border-radius: 9999px;
+            overflow: hidden;
         }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, #00d9ff, #a855f7);
+            box-shadow: 0 0 14px rgba(0,217,255,0.45);
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+            pointer-events: none;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.8s linear infinite; }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeSlideUp 0.4s ease forwards; }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+        .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+        @keyframes scanline {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        .terminal-scanline {
+            position: absolute;
+            left: 0; right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, rgba(0,217,255,0.025), transparent);
+            pointer-events: none;
+            animation: scanline 4s linear infinite;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff, #0ea5e9);
+            color: #030712;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 24px rgba(0,217,255,0.28);
+        }
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: 0 0 36px rgba(0,217,255,0.45);
+            transform: translateY(-1px);
+        }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .copy-btn {
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.18s ease;
+            cursor: pointer;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+
+        .upload-card {
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-card.gofile-card { background: rgba(0, 217, 255, 0.04); }
+        .upload-card.catbox-card { background: rgba(249, 115, 22, 0.04); }
+        .upload-card.success-gofile { border-color: rgba(0,217,255,0.35); }
+        .upload-card.success-catbox { border-color: rgba(249,115,22,0.35); }
+        .upload-card.failed-card { border-color: rgba(244,63,94,0.3); background: rgba(244,63,94,0.03); }
+
+        .link-input {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: #a1a1aa;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .link-input:focus { border-color: rgba(0,217,255,0.4); }
     </style>
 </head>
-<body class="bg-background text-zinc-100 font-sans min-h-screen flex flex-col p-4 md:p-8 antialiased selection:bg-primary selection:text-white">
+<body class="text-zinc-100 font-sans min-h-screen flex flex-col p-4 md:p-8 antialiased">
 
-    <!-- Header -->
+    <!-- ── HEADER ── -->
     <header class="max-w-6xl mx-auto w-full flex justify-between items-center mb-8">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg,#00d9ff,#a855f7);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#030712" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             </div>
             <div>
                 <h1 class="text-xl font-bold tracking-tight">Turbo <span class="gradient-text">Optimizer</span></h1>
-                <p class="text-xs text-zinc-500 font-mono mt-0.5">v4.0 Pro • Client-Side Engine</p>
+                <p class="text-xs text-zinc-500 font-mono mt-0.5">v5.0 Pro Final &bull; Client-Side Engine</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <div id="status-indicator" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs font-medium text-zinc-400 transition-colors">
-                <div id="status-dot" class="w-2 h-2 rounded-full bg-zinc-500"></div>
+        <div class="flex items-center gap-3">
+            <div id="status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-zinc-800 text-xs font-mono text-zinc-400 transition-all">
+                <div id="status-dot" class="w-2 h-2 rounded-full bg-zinc-600"></div>
                 <span id="status-text">Idle</span>
             </div>
-            <a href="#" class="text-zinc-500 hover:text-white transition-colors" title="GitHub Friendly">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-            </a>
         </div>
     </header>
 
-    <!-- Main App Grid -->
-    <main class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
-        
-        <!-- Left Column (Input & Actions) -->
-        <div class="lg:col-span-5 flex flex-col gap-6">
-            
-            <!-- Automated Drop Zone -->
-            <div id="drop-zone" class="glass-panel rounded-2xl p-8 border-2 border-dashed border-zinc-700 hover:border-primary transition-all duration-300 relative group cursor-pointer flex flex-col items-center justify-center text-center flex-1 min-h-[250px]">
+    <!-- ── MAIN GRID ── -->
+    <main class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
+
+        <!-- ═══ LEFT COLUMN ═══ -->
+        <div class="lg:col-span-5 flex flex-col gap-5">
+
+            <!-- Drop Zone -->
+            <div id="drop-zone" class="glass rounded-2xl border-2 border-dashed border-zinc-800 hover:border-primary/50 transition-all duration-300 relative group cursor-pointer flex flex-col items-center justify-center text-center p-10 min-h-[230px]">
                 <input type="file" id="file-input" multiple accept=".txt" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                <div class="w-16 h-16 rounded-full bg-zinc-800/80 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-zinc-400 group-hover:text-primary transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110" style="background: rgba(0,217,255,0.08); border: 1px solid rgba(0,217,255,0.15);">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00d9ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 </div>
-                <h3 class="text-lg font-semibold text-zinc-200 mb-1">Upload Combo Lists</h3>
-                <p class="text-sm text-zinc-500 max-w-[250px]">Drag & drop <span class="text-primary">.txt</span> files here. Processing starts automatically.</p>
+                <h3 class="text-lg font-bold text-zinc-100 mb-1">Upload Combo Lists</h3>
+                <p class="text-sm text-zinc-500 max-w-xs leading-relaxed">Drag &amp; drop <span class="text-primary font-mono">.txt</span> files here. Processing starts instantly on drop.</p>
+                <p class="text-xs text-zinc-600 font-mono mt-3">Supports multiple files &bull; All processing is local</p>
             </div>
 
-            <!-- Action Buttons (Hidden by default, shown when done) -->
-            <div id="action-panel" class="glass-panel rounded-2xl p-4 flex flex-col gap-3 hidden opacity-0 transition-opacity duration-500">
-                <button id="btn-download" class="w-full py-3 px-4 bg-primary hover:bg-cyan-400 text-slate-900 font-bold rounded-xl flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <!-- Action Panel (shown after processing) -->
+            <div id="action-panel" class="hidden flex flex-col gap-3">
+                <button id="btn-download" class="btn-primary w-full py-3.5 px-5 rounded-xl flex items-center justify-center gap-2.5 text-sm">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Download Cleaned File
                 </button>
                 <div class="grid grid-cols-2 gap-3">
-                    <button id="btn-copy" class="py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded-xl flex items-center justify-center gap-2 transition-colors border border-zinc-700">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <button id="btn-copy" class="py-2.5 glass rounded-xl flex items-center justify-center gap-2 text-sm font-semibold text-zinc-200 border border-zinc-700 hover:border-zinc-500 transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                         Copy to Clipboard
                     </button>
-                    <button id="btn-share" class="py-2.5 bg-secondary hover:bg-purple-500 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors border border-purple-600 shadow-[0_0_15px_rgba(139,92,246,0.2)]">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        Get Share Link
+                    <button id="btn-share" class="py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold text-white border border-purple-700/60 hover:border-purple-500 transition-all" style="background: rgba(168,85,247,0.15); box-shadow: 0 0 18px rgba(168,85,247,0.15);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        Upload to Both
                     </button>
                 </div>
             </div>
 
-            <!-- Share Result Box -->
-            <div id="share-box" class="glass-panel rounded-2xl p-4 border-secondary/50 hidden">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-semibold text-secondary flex items-center gap-2">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                        Secure Link Ready
-                    </span>
-                    <button onclick="document.getElementById('share-link').select(); document.execCommand('copy'); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 1500);" class="text-xs bg-secondary/20 hover:bg-secondary/40 text-secondary px-2 py-1 rounded transition-colors">Copy</button>
+            <!-- Share Cards Container -->
+            <div id="share-container" class="hidden flex flex-col gap-3 animate-in">
+                <div class="flex items-center justify-between mb-1">
+                    <p class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Share Links</p>
+                    <div id="share-global-status" class="text-xs font-mono text-zinc-500"></div>
                 </div>
-                <input type="text" id="share-link" readonly onclick="this.select()" class="w-full bg-background border border-zinc-700 text-zinc-300 rounded-lg p-2.5 text-sm font-mono focus:border-secondary transition-colors outline-none mb-1">
-                <p id="share-note" class="text-xs text-zinc-500 mt-1">Link generated via ephemeral storage.</p>
-            </div>
-        </div>
 
-        <!-- Right Column (Stats & Console) -->
-        <div class="lg:col-span-7 flex flex-col gap-6">
-            
-            <!-- Live Metrics Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="glass-panel p-4 rounded-2xl">
-                    <p class="text-xs text-zinc-400 font-medium uppercase tracking-wider mb-1">Total Parsed</p>
-                    <p id="stat-total" class="text-2xl font-bold font-mono">0</p>
+                <!-- GoFile Card -->
+                <div id="card-gofile" class="upload-card gofile-card">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background: rgba(0,217,255,0.12);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00d9ff" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-primary font-mono">GoFile.io</p>
+                                <p class="text-xs text-zinc-600 font-mono">10 GB &bull; Permanent</p>
+                            </div>
+                        </div>
+                        <div id="gofile-status" class="flex items-center gap-1.5">
+                            <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00d9ff" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                            <span class="text-xs font-mono text-zinc-400">Uploading...</span>
+                        </div>
+                    </div>
+                    <div id="gofile-link-row" class="hidden flex items-center gap-2">
+                        <input id="gofile-link" type="text" readonly onclick="this.select()" class="link-input" placeholder="">
+                        <button onclick="copyLink('gofile-link', this)" class="copy-btn" style="color:#00d9ff; border-color: rgba(0,217,255,0.35); background: rgba(0,217,255,0.08);">COPY</button>
+                    </div>
+                    <p id="gofile-note" class="text-xs text-zinc-600 font-mono hidden"></p>
                 </div>
-                <div class="glass-panel p-4 rounded-2xl relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <p class="text-xs text-primary font-medium uppercase tracking-wider mb-1">Valid Hits</p>
+
+                <!-- Catbox Card -->
+                <div id="card-catbox" class="upload-card catbox-card">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background: rgba(249,115,22,0.12);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-orange-400 font-mono">Litterbox (Catbox)</p>
+                                <p class="text-xs text-zinc-600 font-mono">1 GB &bull; 24h TTL</p>
+                            </div>
+                        </div>
+                        <div id="catbox-status" class="flex items-center gap-1.5">
+                            <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                            <span class="text-xs font-mono text-zinc-400">Uploading...</span>
+                        </div>
+                    </div>
+                    <div id="catbox-link-row" class="hidden flex items-center gap-2">
+                        <input id="catbox-link" type="text" readonly onclick="this.select()" class="link-input" placeholder="">
+                        <button onclick="copyLink('catbox-link', this)" class="copy-btn" style="color:#f97316; border-color: rgba(249,115,22,0.35); background: rgba(249,115,22,0.08);">COPY</button>
+                    </div>
+                    <p id="catbox-note" class="text-xs text-zinc-600 font-mono hidden"></p>
+                </div>
+            </div>
+
+        </div><!-- end left col -->
+
+        <!-- ═══ RIGHT COLUMN ═══ -->
+        <div class="lg:col-span-7 flex flex-col gap-5">
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="stat-card glass rounded-2xl p-4">
+                    <p class="text-xs text-zinc-500 font-mono uppercase tracking-wider mb-2">Total Lines</p>
+                    <p id="stat-total" class="text-2xl font-bold font-mono text-zinc-200">0</p>
+                </div>
+                <div class="stat-card glass rounded-2xl p-4">
+                    <p class="text-xs font-mono uppercase tracking-wider mb-2 text-primary">Valid Hits</p>
                     <p id="stat-unique" class="text-2xl font-bold font-mono text-primary">0</p>
                 </div>
-                <div class="glass-panel p-4 rounded-2xl">
-                    <p class="text-xs text-danger font-medium uppercase tracking-wider mb-1">Duplicates</p>
+                <div class="stat-card glass rounded-2xl p-4">
+                    <p class="text-xs font-mono uppercase tracking-wider mb-2 text-danger">Dupes</p>
                     <p id="stat-dupes" class="text-2xl font-bold font-mono text-danger">0</p>
                 </div>
-                <div class="glass-panel p-4 rounded-2xl">
-                    <p class="text-xs text-zinc-400 font-medium uppercase tracking-wider mb-1">Speed</p>
-                    <p class="text-2xl font-bold font-mono text-zinc-200"><span id="stat-speed">0</span><span class="text-xs text-zinc-500 ml-1">L/s</span></p>
+                <div class="stat-card glass rounded-2xl p-4">
+                    <p class="text-xs text-zinc-500 font-mono uppercase tracking-wider mb-2">Speed</p>
+                    <p class="text-2xl font-bold font-mono"><span id="stat-speed">0</span><span class="text-xs text-zinc-600 ml-1">L/s</span></p>
                 </div>
             </div>
 
-            <!-- Top Domain & Progress -->
-            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-4">
-                <div class="flex justify-between items-end">
+            <!-- Progress + Domain -->
+            <div class="glass rounded-2xl p-5 flex flex-col gap-4">
+                <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs text-zinc-400 font-medium uppercase tracking-wider mb-1">Top Domain Extracted</p>
-                        <p id="stat-domain" class="text-lg font-semibold text-zinc-200">-</p>
+                        <p class="text-xs text-zinc-500 font-mono uppercase tracking-wider mb-1.5">Top Domain</p>
+                        <p id="stat-domain" class="text-base font-semibold text-zinc-200 font-mono">—</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-xs text-zinc-400 font-medium uppercase tracking-wider mb-1">Progress</p>
-                        <p id="stat-percent" class="text-lg font-bold text-primary font-mono">0%</p>
+                        <p class="text-xs text-zinc-500 font-mono uppercase tracking-wider mb-1.5">Progress</p>
+                        <p id="stat-percent" class="text-2xl font-bold font-mono text-primary">0%</p>
                     </div>
                 </div>
-                <!-- Progress Bar -->
-                <div class="w-full bg-zinc-800 rounded-full h-2.5 overflow-hidden">
-                    <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-2.5 rounded-full w-0 transition-all duration-300 ease-out progress-glow"></div>
+                <div class="progress-track h-2">
+                    <div id="progress-bar" class="progress-fill w-0"></div>
+                </div>
+                <div class="flex justify-between items-center text-xs font-mono text-zinc-600">
+                    <span id="progress-label-left">Awaiting payload...</span>
+                    <span id="progress-label-right"></span>
                 </div>
             </div>
 
-            <!-- Cyber Terminal -->
-            <div class="glass-panel rounded-2xl border-zinc-700/50 flex flex-col overflow-hidden flex-1 min-h-[250px]">
-                <div class="bg-zinc-900/80 px-4 py-2 border-b border-zinc-800 flex items-center gap-2">
+            <!-- Terminal -->
+            <div class="glass rounded-2xl overflow-hidden flex flex-col flex-1 min-h-[270px] relative">
+                <div class="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-800/80 bg-black/30">
                     <div class="flex gap-1.5">
-                        <div class="w-3 h-3 rounded-full bg-danger/80"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                        <div class="w-3 h-3 rounded-full bg-success/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-danger/70"></div>
+                        <div class="w-3 h-3 rounded-full bg-warning/70"></div>
+                        <div class="w-3 h-3 rounded-full bg-success/70"></div>
                     </div>
-                    <span class="text-xs font-mono text-zinc-500 ml-2">sys_terminal_v4.exe</span>
+                    <span class="text-xs font-mono text-zinc-600 ml-1">turbo_engine_v5.exe</span>
+                    <div class="ml-auto flex items-center gap-1.5">
+                        <div id="term-dot" class="w-1.5 h-1.5 rounded-full bg-zinc-700"></div>
+                        <span id="term-live" class="text-xs font-mono text-zinc-600">standby</span>
+                    </div>
                 </div>
-                <div id="console-output" class="p-4 font-mono text-xs md:text-sm overflow-y-auto flex-1 space-y-1.5 scroll-smooth h-full max-h-[300px]">
-                    <div class="text-zinc-500">
-                        <span class="text-primary">[SYS]</span> Application initialized. Memory allocated.<br>
-                        <span class="text-primary">[SYS]</span> Awaiting raw payload injection...
-                    </div>
+                <div class="terminal-scanline"></div>
+                <div id="console-output" class="p-4 font-mono text-xs overflow-y-auto flex-1 space-y-1.5 max-h-[320px] relative z-10">
+                    <div><span class="text-zinc-600">[--:--:--]</span> <span class="text-primary">[SYS]</span> <span class="text-zinc-400">Turbo Optimizer v5.0 initialized.</span></div>
+                    <div><span class="text-zinc-600">[--:--:--]</span> <span class="text-primary">[SYS]</span> <span class="text-zinc-400">Web Worker engine loaded. WASM optional modules ready.</span></div>
+                    <div><span class="text-zinc-600">[--:--:--]</span> <span class="text-primary">[SYS]</span> <span class="text-zinc-400">Awaiting payload injection...</span></div>
                 </div>
             </div>
 
-        </div>
+        </div><!-- end right col -->
     </main>
 
-    <script>
-        /**
-         * ------------------------------------------------------------------
-         * ADVANCED INLINE WEB WORKER
-         * ------------------------------------------------------------------
-         */
-        const workerCode = `
-        self.onmessage = async function(e) {
-            const { files } = e.data;
-            
-            const uniqueLines = new Set();
-            const domainCounts = {};
-            
-            let totalProcessed = 0;
-            let totalDupes = 0;
-            let currentFileIndex = 0;
-            
-            const startTime = performance.now();
-            const updateInterval = 10000; // Update freq
-            let lastUpdateLines = 0;
-            let lastUpdateTime = startTime;
+    <!-- ── FOOTER ── -->
+    <footer class="max-w-6xl mx-auto w-full mt-6 flex justify-between items-center text-xs font-mono text-zinc-700">
+        <span>Turbo Optimizer v5.0 &bull; All processing is 100% local. No data leaves your device unless you explicitly share.</span>
+        <span id="footer-count"></span>
+    </footer>
 
-            for (const file of files) {
-                currentFileIndex++;
-                self.postMessage({ type: 'log', msg: 'Mounting file: ' + file.name + ' (' + formatBytes(file.size) + ')' });
-                
-                try {
-                    const text = await file.text();
-                    
-                    let startIndex = 0;
-                    let endIndex = 0;
-                    const len = text.length;
+<script>
+/* ====================================================================
+   INLINE WEB WORKER — High-performance line processor
+   ==================================================================== */
+const WORKER_CODE = `
+self.onmessage = async function(e) {
+    const { files } = e.data;
+    const uniqueLines = new Set();
+    const domainCounts = {};
+    let totalProcessed = 0;
+    let totalDupes = 0;
+    let currentFileIndex = 0;
+    const startTime = performance.now();
+    const UPDATE_INTERVAL = 8000;
+    let lastUpdateLines = 0;
+    let lastUpdateTime = startTime;
 
-                    while (startIndex < len) {
-                        endIndex = text.indexOf('\\n', startIndex);
-                        if (endIndex === -1) endIndex = len;
-
-                        let line = text.substring(startIndex, endIndex).trim();
-                        startIndex = endIndex + 1;
-                        
-                        if (!line) continue;
-                        totalProcessed++;
-
-                        const separatorIndex = line.indexOf(':');
-                        if (separatorIndex === -1) continue;
-
-                        const pipeIndex = line.indexOf('|');
-                        if (pipeIndex > separatorIndex) {
-                            line = line.substring(0, pipeIndex).trim();
-                        }
-
-                        if (line.length < 3) continue;
-
-                        if (uniqueLines.has(line)) {
-                            totalDupes++;
-                        } else {
-                            uniqueLines.add(line);
-                            
-                            const atIndex = line.indexOf('@');
-                            if (atIndex > -1) {
-                                const passSep = line.indexOf(':', atIndex);
-                                if (passSep > -1) {
-                                    const domain = line.substring(atIndex + 1, passSep).toLowerCase();
-                                    if(domain) {
-                                        domainCounts[domain] = (domainCounts[domain] || 0) + 1;
-                                    }
-                                }
-                            }
-                        }
-
-                        // Throttle UI updates & calculate speed
-                        if (totalProcessed - lastUpdateLines > updateInterval) {
-                            const now = performance.now();
-                            const timeDiffSec = (now - lastUpdateTime) / 1000;
-                            const linesDiff = totalProcessed - lastUpdateLines;
-                            const speed = Math.floor(linesDiff / timeDiffSec);
-                            
-                            postProgress(totalProcessed, uniqueLines.size, totalDupes, domainCounts, speed);
-                            
-                            lastUpdateLines = totalProcessed;
-                            lastUpdateTime = now;
-                            
-                            // Estimate progress based on current file
-                            const fileProgress = (startIndex / len) * 100;
-                            const overallProgress = ((currentFileIndex - 1) * 100 + fileProgress) / files.length;
-                            self.postMessage({ type: 'fileProgress', percent: overallProgress });
+    for (const file of files) {
+        currentFileIndex++;
+        self.postMessage({ type: 'log', msg: 'Mounting: ' + file.name + ' (' + fmtBytes(file.size) + ')' });
+        try {
+            const text = await file.text();
+            let si = 0, ei = 0;
+            const len = text.length;
+            while (si < len) {
+                ei = text.indexOf('\\n', si);
+                if (ei === -1) ei = len;
+                let line = text.substring(si, ei).trim();
+                si = ei + 1;
+                if (!line) continue;
+                totalProcessed++;
+                const sepIdx = line.indexOf(':');
+                if (sepIdx === -1) continue;
+                const pipeIdx = line.indexOf('|');
+                if (pipeIdx > sepIdx) line = line.substring(0, pipeIdx).trim();
+                if (line.length < 5) continue;
+                if (uniqueLines.has(line)) {
+                    totalDupes++;
+                } else {
+                    uniqueLines.add(line);
+                    const atIdx = line.indexOf('@');
+                    if (atIdx > -1) {
+                        const ps = line.indexOf(':', atIdx);
+                        if (ps > -1) {
+                            const dom = line.substring(atIdx + 1, ps).toLowerCase();
+                            if (dom) domainCounts[dom] = (domainCounts[dom] || 0) + 1;
                         }
                     }
-                } catch (err) {
-                    self.postMessage({ type: 'error', msg: 'Corrupt sector in ' + file.name + ': ' + err.message });
+                }
+                if (totalProcessed - lastUpdateLines > UPDATE_INTERVAL) {
+                    const now = performance.now();
+                    const dt = (now - lastUpdateTime) / 1000;
+                    const spd = Math.floor((totalProcessed - lastUpdateLines) / dt);
+                    postStats(totalProcessed, uniqueLines.size, totalDupes, domainCounts, spd);
+                    const fp = (si / len) * 100;
+                    const op = ((currentFileIndex - 1) * 100 + fp) / files.length;
+                    self.postMessage({ type: 'progress', percent: op });
+                    lastUpdateLines = totalProcessed;
+                    lastUpdateTime = now;
                 }
             }
-
-            // Final Update calculation
-            const totalTimeSec = (performance.now() - startTime) / 1000;
-            const finalSpeed = Math.floor(totalProcessed / totalTimeSec);
-            postProgress(totalProcessed, uniqueLines.size, totalDupes, domainCounts, finalSpeed);
-
-            self.postMessage({ type: 'log', msg: 'Operation complete. Building final payload...' });
-            
-            // Generate output blob
-            const finalString = Array.from(uniqueLines).join('\\n');
-            const blob = new Blob([finalString], { type: 'text/plain' });
-            
-            self.postMessage({ type: 'done', blob: blob, uniqueCount: uniqueLines.size, time: totalTimeSec });
-        };
-
-        function postProgress(total, unique, dupes, domains, speed) {
-            let topDomain = '-';
-            let maxCount = 0;
-            for(let d in domains) {
-                if(domains[d] > maxCount) {
-                    maxCount = domains[d];
-                    topDomain = d;
-                }
-            }
-            self.postMessage({
-                type: 'stats',
-                data: { total, unique, dupes, topDomain: topDomain + ' (' + maxCount + ')', speed }
-            });
+            self.postMessage({ type: 'log', msg: 'Done: ' + file.name + '. Valid so far: ' + uniqueLines.size.toLocaleString() });
+        } catch (err) {
+            self.postMessage({ type: 'error', msg: 'Error in ' + file.name + ': ' + err.message });
         }
+    }
 
-        function formatBytes(bytes, decimals = 2) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    const totalSec = (performance.now() - startTime) / 1000;
+    const finalSpd = Math.floor(totalProcessed / totalSec);
+    postStats(totalProcessed, uniqueLines.size, totalDupes, domainCounts, finalSpd);
+    self.postMessage({ type: 'log', msg: 'All files processed in ' + totalSec.toFixed(2) + 's. Building output blob...' });
+
+    const finalStr = Array.from(uniqueLines).join('\\n');
+    const blob = new Blob([finalStr], { type: 'text/plain' });
+    self.postMessage({ type: 'done', blob, uniqueCount: uniqueLines.size, totalTime: totalSec });
+};
+
+function postStats(total, unique, dupes, domains, speed) {
+    let topDomain = '-'; let maxC = 0;
+    for (let d in domains) { if (domains[d] > maxC) { maxC = domains[d]; topDomain = d; } }
+    self.postMessage({
+        type: 'stats',
+        data: { total, unique, dupes, topDomain: maxC > 0 ? topDomain + ' (' + maxC + ')' : '-', speed }
+    });
+}
+
+function fmtBytes(b, d = 1) {
+    if (!b) return '0 B';
+    const k = 1024, s = ['B','KB','MB','GB'];
+    const i = Math.floor(Math.log(b) / Math.log(k));
+    return parseFloat((b / Math.pow(k, i)).toFixed(d)) + ' ' + s[i];
+}
+`;
+
+/* ====================================================================
+   DOM REFERENCES
+   ==================================================================== */
+const dropZone       = document.getElementById('drop-zone');
+const fileInput      = document.getElementById('file-input');
+const actionPanel    = document.getElementById('action-panel');
+const btnDownload    = document.getElementById('btn-download');
+const btnShare       = document.getElementById('btn-share');
+const btnCopy        = document.getElementById('btn-copy');
+const shareContainer = document.getElementById('share-container');
+const consoleOut     = document.getElementById('console-output');
+const progressBar    = document.getElementById('progress-bar');
+const statPercent    = document.getElementById('stat-percent');
+const statusDot      = document.getElementById('status-dot');
+const statusText     = document.getElementById('status-text');
+const termDot        = document.getElementById('term-dot');
+const termLive       = document.getElementById('term-live');
+const progressLabelL = document.getElementById('progress-label-left');
+const progressLabelR = document.getElementById('progress-label-right');
+
+let resultBlob       = null;
+let finalUniqueCount = 0;
+let worker           = null;
+
+const workerBlob = new Blob([WORKER_CODE], { type: 'application/javascript' });
+const workerUrl  = URL.createObjectURL(workerBlob);
+
+/* ====================================================================
+   DRAG & DROP
+   ==================================================================== */
+['dragenter','dragover','dragleave','drop'].forEach(ev =>
+    dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); })
+);
+['dragenter','dragover'].forEach(ev =>
+    dropZone.addEventListener(ev, () => dropZone.classList.add('drop-active'))
+);
+['dragleave','drop'].forEach(ev =>
+    dropZone.addEventListener(ev, () => dropZone.classList.remove('drop-active'))
+);
+dropZone.addEventListener('drop', e => processFiles(e.dataTransfer.files));
+fileInput.addEventListener('change', e => processFiles(e.target.files));
+
+/* ====================================================================
+   FILE PROCESSING
+   ==================================================================== */
+function processFiles(rawFiles) {
+    const files = Array.from(rawFiles).filter(f => f.name.endsWith('.txt'));
+    if (!files.length) { log('Invalid payload. Only .txt files accepted.', 'error'); return; }
+
+    if (worker) { worker.terminate(); worker = null; }
+    worker = new Worker(workerUrl);
+
+    resetUI();
+    setStatus('processing');
+    log('Intercepted ' + files.length + ' file(s). Igniting engine...');
+    log('Total size: ' + fmtBytes(files.reduce((a, f) => a + f.size, 0)));
+
+    progressLabelL.textContent = 'Processing ' + files.length + ' file(s)...';
+    worker.postMessage({ files });
+
+    worker.onmessage = function(e) {
+        const { type, data, msg, percent, blob, uniqueCount, totalTime } = e.data;
+        if (type === 'log')      { log(msg); }
+        else if (type === 'error') { log(msg, 'error'); }
+        else if (type === 'stats') { updateStats(data); }
+        else if (type === 'progress') {
+            const p = Math.min(100, percent);
+            progressBar.style.width = p + '%';
+            statPercent.textContent = Math.round(p) + '%';
+            progressLabelR.textContent = Math.round(p) + '% complete';
         }
-        `;
+        else if (type === 'done') {
+            resultBlob       = blob;
+            finalUniqueCount = uniqueCount;
+            progressBar.style.width = '100%';
+            statPercent.textContent = '100%';
+            document.getElementById('stat-speed').textContent = '0';
+            progressLabelL.textContent = 'Complete.';
+            progressLabelR.textContent = totalTime.toFixed(2) + 's elapsed';
+            document.getElementById('footer-count').textContent = uniqueCount.toLocaleString() + ' lines ready';
+            setStatus('done');
+            log('Operation finished in ' + totalTime.toFixed(2) + 's. ' + uniqueCount.toLocaleString() + ' clean lines ready.', 'success');
 
-        /**
-         * ------------------------------------------------------------------
-         * UI CONTROLLER
-         * ------------------------------------------------------------------
-         */
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const actionPanel = document.getElementById('action-panel');
-        const btnDownload = document.getElementById('btn-download');
-        const btnShare = document.getElementById('btn-share');
-        const btnCopy = document.getElementById('btn-copy');
-        const shareBox = document.getElementById('share-box');
-        const shareLinkInput = document.getElementById('share-link');
-        const consoleOut = document.getElementById('console-output');
-        const progressBar = document.getElementById('progress-bar');
-        const statPercent = document.getElementById('stat-percent');
-        const statusText = document.getElementById('status-text');
-        const statusDot = document.getElementById('status-dot');
+            actionPanel.classList.remove('hidden');
+            actionPanel.style.animation = 'fadeSlideUp 0.4s ease forwards';
+        }
+    };
+}
 
-        let resultBlob = null;
-        let finalUniqueCount = 0;
-        let worker = null;
+/* ====================================================================
+   SHARE — PARALLEL DUAL UPLOAD
+   ==================================================================== */
+btnShare.addEventListener('click', async () => {
+    if (!resultBlob) return;
 
-        const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
-        const workerUrl = URL.createObjectURL(workerBlob);
+    // Show cards immediately in loading state
+    shareContainer.classList.remove('hidden');
+    resetShareCards();
 
-        // --- Drag & Drop Visuals ---
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
-            dropZone.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+    const originalHTML = btnShare.innerHTML;
+    btnShare.disabled = true;
+    btnShare.innerHTML = `<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Uploading...`;
+
+    const [gofileResult, catboxResult] = await Promise.allSettled([
+        uploadGoFile(resultBlob, finalUniqueCount),
+        uploadCatbox(resultBlob, finalUniqueCount)
+    ]);
+
+    // GoFile result
+    if (gofileResult.status === 'fulfilled' && gofileResult.value.success) {
+        showCardSuccess('gofile', gofileResult.value.url, 'No ads. Direct link. Permanent storage.');
+        log('GoFile.io upload success: ' + gofileResult.value.url, 'success');
+    } else {
+        const err = gofileResult.reason || (gofileResult.value && gofileResult.value.error) || 'Upload failed';
+        showCardFailed('gofile', typeof err === 'string' ? err : err.message || 'Unknown error');
+        log('GoFile.io failed: ' + (typeof err === 'string' ? err : err.message), 'error');
+    }
+
+    // Catbox result
+    if (catboxResult.status === 'fulfilled' && catboxResult.value.success) {
+        showCardSuccess('catbox', catboxResult.value.url, 'No ads. 24h TTL. Direct download link.');
+        log('Litterbox upload success: ' + catboxResult.value.url, 'success');
+    } else {
+        const err = catboxResult.reason || (catboxResult.value && catboxResult.value.error) || 'Upload failed';
+        showCardFailed('catbox', typeof err === 'string' ? err : err.message || 'Unknown error');
+        log('Litterbox failed: ' + (typeof err === 'string' ? err : err.message), 'error');
+    }
+
+    btnShare.disabled = false;
+    btnShare.innerHTML = originalHTML;
+});
+
+async function uploadGoFile(blob, count) {
+    try {
+        // Step 1: Get best server
+        const serverRes = await fetch('https://api.gofile.io/servers', {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
         });
-        
-        ['dragenter', 'dragover'].forEach(eName => {
-            dropZone.addEventListener(eName, () => dropZone.classList.add('drop-active'), false);
+        if (!serverRes.ok) throw new Error('GoFile server resolve failed (' + serverRes.status + ')');
+        const serverData = await serverRes.json();
+        if (serverData.status !== 'ok') throw new Error('GoFile API error: ' + (serverData.message || 'unknown'));
+
+        // Pick the first server from the list
+        const servers = serverData.data && serverData.data.servers;
+        if (!servers || !servers.length) throw new Error('No GoFile servers available');
+        const serverName = servers[0].name;
+
+        // Step 2: Upload
+        const form = new FormData();
+        form.append('file', blob, 'optimized_' + count + '.txt');
+        const uploadRes = await fetch('https://' + serverName + '.gofile.io/contents/uploadfile', {
+            method: 'POST',
+            body: form
         });
-        
-        ['dragleave', 'drop'].forEach(eName => {
-            dropZone.addEventListener(eName, () => dropZone.classList.remove('drop-active'), false);
+        if (!uploadRes.ok) throw new Error('GoFile upload HTTP ' + uploadRes.status);
+        const uploadData = await uploadRes.json();
+        if (uploadData.status !== 'ok') throw new Error('GoFile upload error: ' + (uploadData.message || 'unknown'));
+
+        const url = uploadData.data && uploadData.data.downloadPage;
+        if (!url) throw new Error('GoFile returned no URL');
+        return { success: true, url };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
+async function uploadCatbox(blob, count) {
+    try {
+        const MAX = 1024 * 1024 * 1000; // ~1 GB
+        if (blob.size > MAX) throw new Error('File exceeds 1 GB Catbox limit. Use GoFile instead.');
+        const form = new FormData();
+        form.append('reqtype', 'fileupload');
+        form.append('time', '24h');
+        form.append('fileToUpload', blob, 'optimized_' + count + '.txt');
+        const res = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
+            method: 'POST',
+            body: form
         });
+        if (!res.ok) throw new Error('Catbox HTTP ' + res.status);
+        const text = await res.text();
+        if (!text.startsWith('https://')) throw new Error('Catbox returned invalid response: ' + text.substring(0, 80));
+        return { success: true, url: text.trim() };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
 
-        // --- Automation Trigger ---
-        dropZone.addEventListener('drop', e => processFiles(e.dataTransfer.files), false);
-        fileInput.addEventListener('change', e => processFiles(e.target.files), false);
+/* ====================================================================
+   SHARE CARD UI HELPERS
+   ==================================================================== */
+function resetShareCards() {
+    // GoFile
+    document.getElementById('card-gofile').className = 'upload-card gofile-card';
+    document.getElementById('gofile-link-row').classList.add('hidden');
+    document.getElementById('gofile-note').classList.add('hidden');
+    document.getElementById('gofile-status').innerHTML = `
+        <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00d9ff" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <span class="text-xs font-mono text-zinc-400">Uploading...</span>`;
+    // Catbox
+    document.getElementById('card-catbox').className = 'upload-card catbox-card';
+    document.getElementById('catbox-link-row').classList.add('hidden');
+    document.getElementById('catbox-note').classList.add('hidden');
+    document.getElementById('catbox-status').innerHTML = `
+        <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <span class="text-xs font-mono text-zinc-400">Uploading...</span>`;
+}
 
-        function processFiles(rawFiles) {
-            const files = Array.from(rawFiles).filter(f => f.name.endsWith('.txt'));
-            if (files.length === 0) {
-                log('Invalid payload. Only .TXT files are supported.', 'error');
-                return;
-            }
+function showCardSuccess(provider, url, note) {
+    const isGofile = provider === 'gofile';
+    const card  = document.getElementById('card-' + provider);
+    const stat  = document.getElementById(provider + '-status');
+    const row   = document.getElementById(provider + '-link-row');
+    const inp   = document.getElementById(provider + '-link');
+    const noteEl = document.getElementById(provider + '-note');
+    const color = isGofile ? '#00d9ff' : '#f97316';
 
-            if (worker) worker.terminate(); 
-            worker = new Worker(workerUrl);
-            
-            // UI Reset
-            resetStats();
-            actionPanel.classList.add('hidden', 'opacity-0');
-            shareBox.style.display = 'none';
-            setStatus('processing');
-            
-            log(`Intercepted ${files.length} file(s). Igniting engine...`);
-            
-            // Start automatically
-            worker.postMessage({ files: files });
+    card.classList.add(isGofile ? 'success-gofile' : 'success-catbox');
+    stat.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        <span class="text-xs font-mono" style="color:${color}">Success</span>`;
+    inp.value = url;
+    row.classList.remove('hidden');
+    noteEl.textContent = note;
+    noteEl.classList.remove('hidden');
+}
 
-            worker.onmessage = function(e) {
-                const { type, data, msg, percent, blob, uniqueCount, time } = e.data;
+function showCardFailed(provider, errMsg) {
+    const card  = document.getElementById('card-' + provider);
+    const stat  = document.getElementById(provider + '-status');
+    const noteEl = document.getElementById(provider + '-note');
 
-                if (type === 'log') log(msg);
-                else if (type === 'error') log(msg, 'error');
-                else if (type === 'stats') updateStats(data);
-                else if (type === 'fileProgress') {
-                    progressBar.style.width = Math.min(100, percent) + '%';
-                    statPercent.innerText = Math.min(100, Math.round(percent)) + '%';
-                }
-                else if (type === 'done') {
-                    resultBlob = blob;
-                    finalUniqueCount = uniqueCount;
-                    progressBar.style.width = '100%';
-                    statPercent.innerText = '100%';
-                    document.getElementById('stat-speed').innerText = '0';
-                    
-                    setStatus('success');
-                    log(`Extraction finished in ${time.toFixed(2)}s. Ready for exfiltration.`, 'success');
-                    
-                    // Reveal actions
-                    actionPanel.classList.remove('hidden');
-                    setTimeout(() => actionPanel.classList.remove('opacity-0'), 50);
-                }
-            };
+    card.classList.add('failed-card');
+    stat.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <span class="text-xs font-mono text-danger">Failed</span>`;
+    noteEl.textContent = errMsg;
+    noteEl.classList.remove('hidden');
+}
+
+/* ====================================================================
+   COPY LINK HELPER (global so onclick= works)
+   ==================================================================== */
+window.copyLink = function(inputId, btn) {
+    const val = document.getElementById(inputId).value;
+    if (!val) return;
+    navigator.clipboard.writeText(val).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'COPIED!';
+        setTimeout(() => btn.textContent = orig, 1800);
+    }).catch(() => {
+        document.getElementById(inputId).select();
+        document.execCommand('copy');
+    });
+};
+
+/* ====================================================================
+   DOWNLOAD
+   ==================================================================== */
+btnDownload.addEventListener('click', () => {
+    if (!resultBlob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(resultBlob);
+    const d = new Date();
+    const ts = d.getFullYear() + '' +
+        String(d.getMonth()+1).padStart(2,'0') +
+        String(d.getDate()).padStart(2,'0') + '_' +
+        String(d.getHours()).padStart(2,'0') +
+        String(d.getMinutes()).padStart(2,'0');
+    a.download = 'optimized_' + ts + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    log('Payload saved to local drive: optimized_' + ts + '.txt', 'success');
+});
+
+/* ====================================================================
+   COPY TO CLIPBOARD
+   ==================================================================== */
+btnCopy.addEventListener('click', async () => {
+    if (!resultBlob) return;
+    try {
+        const text = await resultBlob.text();
+        if (text.length > 600000) log('Large payload detected. Clipboard write may be slow...', 'info');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            const t = document.createElement('textarea');
+            t.value = text;
+            document.body.appendChild(t);
+            t.select();
+            document.execCommand('copy');
+            document.body.removeChild(t);
         }
+        const orig = btnCopy.innerHTML;
+        btnCopy.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22d3a5" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> Copied!`;
+        setTimeout(() => btnCopy.innerHTML = orig, 2000);
+        log('Payload injected to clipboard.', 'success');
+    } catch (err) {
+        log('Clipboard write failed: ' + err.message, 'error');
+    }
+});
 
-        // --- File Uploader Logic (Tmpfiles/File.io) ---
-        btnShare.addEventListener('click', async () => {
-            if (!resultBlob) return;
-            if (window.location.protocol === 'file:') {
-                 log('Security override: Local file:// context blocks outbound connections.', 'error');
-                 return;
-            }
+/* ====================================================================
+   UI UTILITIES
+   ==================================================================== */
+function updateStats(d) {
+    document.getElementById('stat-total').textContent  = d.total.toLocaleString();
+    document.getElementById('stat-unique').textContent = d.unique.toLocaleString();
+    document.getElementById('stat-dupes').textContent  = d.dupes.toLocaleString();
+    document.getElementById('stat-speed').textContent  = d.speed >= 0 ? d.speed.toLocaleString() : '0';
+    document.getElementById('stat-domain').textContent = d.topDomain || '—';
+}
 
-            const originalHTML = btnShare.innerHTML;
-            btnShare.disabled = true;
-            btnShare.innerHTML = `<svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> Encrypting...`;
-            
-            try {
-                const MAX_SIZE = 50 * 1024 * 1024;
-                if (resultBlob.size > MAX_SIZE) throw new Error("Payload exceeds 50MB network threshold. Use direct download.");
+function resetUI() {
+    updateStats({ total: 0, unique: 0, dupes: 0, speed: 0, topDomain: '—' });
+    progressBar.style.width = '0%';
+    statPercent.textContent = '0%';
+    progressLabelL.textContent = 'Initializing...';
+    progressLabelR.textContent = '';
+    consoleOut.innerHTML = '';
+    actionPanel.classList.add('hidden');
+    shareContainer.classList.add('hidden');
+    document.getElementById('footer-count').textContent = '';
+    resultBlob = null;
+    finalUniqueCount = 0;
+}
 
-                log('Establishing secure tunnel to tmpfiles.org...', 'info');
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 60000);
-                let shareUrl = null;
+function setStatus(state) {
+    if (state === 'processing') {
+        statusText.textContent = 'Processing';
+        statusDot.className = 'w-2 h-2 rounded-full bg-primary pulse-dot';
+        termDot.className = 'w-1.5 h-1.5 rounded-full bg-primary pulse-dot';
+        termLive.textContent = 'live';
+        termLive.style.color = '#00d9ff';
+    } else if (state === 'done') {
+        statusText.textContent = 'Ready';
+        statusDot.className = 'w-2 h-2 rounded-full bg-success';
+        termDot.className = 'w-1.5 h-1.5 rounded-full bg-success';
+        termLive.textContent = 'done';
+        termLive.style.color = '#22d3a5';
+    }
+}
 
-                try {
-                    const formData = new FormData();
-                    formData.append('file', resultBlob, `hot_${finalUniqueCount}.txt`);
-                    const response = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: formData, signal: controller.signal });
-                    const data = await response.json();
-                    
-                    if (response.ok && data.status === 'success') {
-                        shareUrl = data.data.url;
-                        document.getElementById('share-note').innerText = "Encrypted link via tmpfiles.org (60 Min TTL).";
-                    } else throw new Error(data.message || "Host rejected connection");
-                } catch (primaryErr) {
-                    if (primaryErr.name === 'AbortError' || primaryErr.message.includes('threshold')) throw primaryErr;
-                    log(`Tunnel 1 collapsed. Rerouting to file.io fallback...`, 'info');
-                    
-                    const fData = new FormData();
-                    fData.append('file', resultBlob, `hot_${finalUniqueCount}.txt`);
-                    fData.append('expires', '1d');
-                    const fallbackResponse = await fetch('https://file.io', { method: 'POST', body: fData, signal: controller.signal });
-                    const fDataJson = await fallbackResponse.json();
-                    
-                    if (fallbackResponse.ok && fDataJson.success) {
-                        shareUrl = fDataJson.link;
-                        document.getElementById('share-note').innerText = "Encrypted link via File.io (1 Download / 24h TTL).";
-                    } else throw new Error("All outbound routes blocked.");
-                } finally {
-                    clearTimeout(timeoutId);
-                }
+function log(msg, type = 'info') {
+    const d = new Date();
+    const t = String(d.getHours()).padStart(2,'0') + ':' +
+              String(d.getMinutes()).padStart(2,'0') + ':' +
+              String(d.getSeconds()).padStart(2,'0');
+    const el = document.createElement('div');
+    let prefixColor = '#00d9ff', prefix = 'SYS', msgColor = '#a1a1aa';
+    if (type === 'success') { prefixColor = '#22d3a5'; prefix = 'OK';  msgColor = '#22d3a5'; }
+    if (type === 'error')   { prefixColor = '#f43f5e'; prefix = 'ERR'; msgColor = '#f43f5e'; }
+    el.innerHTML = `<span style="color:#3f3f52">[${t}]</span> <span style="color:${prefixColor}">[${prefix}]</span> <span style="color:${msgColor}">${msg}</span>`;
+    consoleOut.appendChild(el);
+    consoleOut.scrollTop = consoleOut.scrollHeight;
+}
 
-                if (shareUrl) {
-                    shareBox.style.display = 'block';
-                    shareLinkInput.value = shareUrl;
-                    log('Exfiltration successful. Link secured.', 'success');
-                    shareLinkInput.select();
-                }
-            } catch (e) {
-                let errMsg = e.message;
-                if (e.name === 'AbortError') errMsg = "Connection timed out. Network unstable.";
-                else if (errMsg === "Failed to fetch" || e.message.includes("NetworkError")) errMsg = "CORS block or Firewall active. Download locally.";
-                log(`[ERR] ${errMsg}`, 'error');
-            } finally {
-                btnShare.disabled = false;
-                btnShare.innerHTML = originalHTML;
-            }
-        });
-
-        // --- Core Utilities ---
-        btnDownload.addEventListener('click', () => {
-            if (!resultBlob) return;
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(resultBlob);
-            
-            const d = new Date();
-            const ts = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
-            a.download = `optimized_${ts}.txt`;
-            
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            log('Payload downloaded to local drive.', 'success');
-        });
-
-        btnCopy.addEventListener('click', async () => {
-            if (!resultBlob) return;
-            try {
-                const text = await resultBlob.text();
-                if (text.length > 500000) log('Warning: Large payload injected to clipboard. Memory spike expected.', 'info');
-                
-                if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
-                else {
-                    const t = document.createElement("textarea"); t.value = text;
-                    document.body.appendChild(t); t.focus(); t.select();
-                    document.execCommand('copy'); document.body.removeChild(t);
-                }
-                
-                const orig = btnCopy.innerHTML;
-                btnCopy.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-success"><path d="M20 6L9 17l-5-5"></path></svg> Copied`;
-                setTimeout(() => btnCopy.innerHTML = orig, 2000);
-            } catch (err) { log('Clipboard write failed: ' + err, 'error'); }
-        });
-
-        function updateStats(d) {
-            document.getElementById('stat-total').innerText = d.total.toLocaleString();
-            document.getElementById('stat-unique').innerText = d.unique.toLocaleString();
-            document.getElementById('stat-dupes').innerText = d.dupes.toLocaleString();
-            document.getElementById('stat-speed').innerText = d.speed >= 0 ? d.speed.toLocaleString() : '0';
-            document.getElementById('stat-domain').innerText = d.topDomain;
-        }
-
-        function resetStats() {
-            updateStats({ total: 0, unique: 0, dupes: 0, speed: 0, topDomain: '-' });
-            progressBar.style.width = '0%';
-            statPercent.innerText = '0%';
-            consoleOut.innerHTML = '';
-        }
-
-        function setStatus(state) {
-            if (state === 'processing') {
-                statusText.innerText = 'Processing...';
-                statusDot.className = 'w-2 h-2 rounded-full bg-primary animate-pulse';
-            } else if (state === 'success') {
-                statusText.innerText = 'System Ready';
-                statusDot.className = 'w-2 h-2 rounded-full bg-success';
-            }
-        }
-
-        function log(msg, type = 'info') {
-            const d = new Date();
-            const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-            const div = document.createElement('div');
-            
-            let color = 'text-zinc-300';
-            let prefix = 'SYS';
-            if (type === 'success') { color = 'text-success'; prefix = 'OK'; }
-            if (type === 'error') { color = 'text-danger'; prefix = 'ERR'; }
-            if (type === 'info') color = 'text-zinc-400';
-
-            div.innerHTML = `<span class="text-zinc-600 mr-2">[${time}]</span><span class="${type==='error'?'text-danger':'text-primary'}">[${prefix}]</span> <span class="${color}">${msg}</span>`;
-            consoleOut.appendChild(div);
-            consoleOut.scrollTop = consoleOut.scrollHeight;
-        }
-
-        function formatBytes(b, d = 2) {
-            if (b === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(b) / Math.log(k));
-            return parseFloat((b / Math.pow(k, i)).toFixed(d < 0 ? 0 : d)) + ' ' + sizes[i];
-        }
-    </script>
+function fmtBytes(b, d = 1) {
+    if (!b) return '0 B';
+    const k = 1024, s = ['B','KB','MB','GB'];
+    const i = Math.floor(Math.log(b) / Math.log(k));
+    return parseFloat((b / Math.pow(k, i)).toFixed(d)) + ' ' + s[i];
+}
+</script>
 </body>
 </html>
